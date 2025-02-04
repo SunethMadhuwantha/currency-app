@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import axios from "axios";
 
 export default function MainPage() {
   const [date, setDate] = useState(null);
@@ -6,11 +7,48 @@ export default function MainPage() {
   const [targetCurrency, setTargerCurrency] = useState("");
   const [amountInSourceCurrency, setAmountInSourceCurrency] = useState(0);
   const [amountInTargetCurrency, setAmountInTargetCurrency] = useState(0);
+  const[currencyNames,setCurrencyNames] = useState([]); //
+  const[loading,setLoading] = useState(true)
 
-  const handleSubmit=(e)=>{
+  const handleSubmit=async (e)=>{
     e.preventDefault();
-    console.log(date,sourceCurrency,targetCurrency,amountInSourceCurrency)
+    try {
+      const response =await axios.get(
+        "http://localhost:5000/convert",{
+          params:{
+            date,
+            sourceCurrency,
+            targetCurrency,
+            amountInSourceCurrency,
+          }
+        }
+      );
+setAmountInTargetCurrency(response.data)
+setLoading(false)
+      console.log(amountInSourceCurrency,amountInTargetCurrency)
+      
+    } catch (err) {
+      console.error(err)
+      
+    }
   }
+
+
+  useEffect(()=>{
+    const getCurrencyNames = async()=>{
+      try {
+        const response =await axios.get(
+          "http://localhost:5000/getAllCurrencies"
+        );
+        setCurrencyNames(response.data);
+        
+      } catch (err) {
+        console.error(err)
+        
+      }
+    };
+    getCurrencyNames();
+  },[])
 
   return (
     <div>
@@ -57,8 +95,16 @@ export default function MainPage() {
                 id={sourceCurrency}
                 name={sourceCurrency}
                 value={sourceCurrency}
+                required
               >
                 <option value="">Select currency</option>
+                {Object.keys(currencyNames).map((currency)=>(
+                  <option  className="p-1" key={currency} value={currency}>
+                    {currencyNames[currency]}
+                 
+
+                  </option>
+                ))}
               </select>
             </div>
             <div className="mb-4">
@@ -74,8 +120,16 @@ export default function MainPage() {
                 placeholder="elect Target currency"
                 id={targetCurrency}
                 name={targetCurrency}
+                required
               >
                 <option value="">Select Target currency</option>
+                {Object.keys(currencyNames).map((currency)=>(
+                  <option  className="p-1" key={currency} value={currency}>
+                    {currencyNames[currency]}
+                 
+
+                  </option>
+                ))}
               </select>
             </div>
 
@@ -102,6 +156,15 @@ export default function MainPage() {
           </form>
         </section>
       </div>
-    </div>
+      {!loading?(
+        <section className="mt-5 lg:mx-60 text-xl ">
+        {amountInSourceCurrency} {currencyNames[sourceCurrency]} is equals to {" "}
+        <span className="text-green-500 font-bold">{amountInTargetCurrency} </span>in {currencyNames[targetCurrency]}
+      
+        </section>
+
+      ):null}
+      
+      </div>
   );
 }
