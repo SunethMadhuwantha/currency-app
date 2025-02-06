@@ -8,7 +8,7 @@ const app=express();
 app.use(express.json())
 app.use(cors())
 
-//all currencies
+//all currencies in list
 app.get("/getAllCurrencies", async (req,res)=>{
     const nameURL="https://openexchangerates.org/api/currencies.json?app_id=cb1dc9ec0c934f83a4d648e87dc43294";
 
